@@ -17,6 +17,369 @@ html {
   min-height: 100%;
 }
 
+/* Importar una fuente moderna de Google Fonts */
+@import url('https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap');
+
 body {
-  margin-bottom: 60px;
+    margin-bottom: 60px;
+    font-family: 'Poppins', sans-serif;
+    background-color: #f8f9fa; /* Un gris muy claro para el fondo */
+    color: #343a40; /* Texto oscuro para buena legibilidad */
+}
+
+a {
+    color: #007bff; /* Color azul para enlaces */
+    text-decoration: none; /* Quitar el subrayado por defecto */
+}
+
+    a:hover {
+        color: #0056b3; /* Un azul más oscuro al pasar el ratón */
+        text-decoration: underline; /* Subrayado al pasar el ratón */
+    }
+
+/* Contenedor principal para centrar el contenido */
+.container {
+    max-width: 1200px; /* Ancho máximo para el contenido */
+    margin-top: 2rem; /* Espacio superior */
+    margin-bottom: 2rem; /* Espacio inferior */
+}
+
+header {
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05); /* Sombra sutil para la barra de navegación */
+    background-color: #ffffff; /* Fondo blanco */
+}
+
+.navbar {
+    padding: 1rem 1.5rem; /* Relleno interno */
+}
+
+.navbar-brand {
+    font-weight: 700; /* Texto más grueso para el logo */
+    font-size: 1.5rem; /* Tamaño de fuente del logo */
+    color: #343a40 !important; /* Color oscuro para el brand */
+}
+
+.navbar-nav .nav-link {
+    font-weight: 500; /* Grosor de fuente para los enlaces */
+    color: #495057 !important; /* Color más oscuro para los enlaces */
+    margin-right: 15px; /* Espacio entre los elementos del menú */
+    transition: color 0.3s ease; /* Transición suave al pasar el ratón */
+}
+
+    .navbar-nav .nav-link:hover {
+        color: #007bff !important; /* Azul al pasar el ratón */
+    }
+
+/* Estilo para el botón del carrito */
+#viewCartBtn {
+    background-color: #ffc107; /* Amarillo de Bootstrap para el botón */
+    border-color: #ffc107;
+    color: #343a40; /* Color de texto oscuro para el botón */
+    font-weight: 600;
+    padding: 0.5rem 1rem;
+    border-radius: 0.3rem; /* Bordes ligeramente redondeados */
+    transition: background-color 0.3s ease, border-color 0.3s ease;
+}
+
+    #viewCartBtn:hover {
+        background-color: #e0a800; /* Amarillo más oscuro al pasar el ratón */
+        border-color: #e0a800;
+    }
+
+main {
+    background-color: #ffffff; /* Fondo blanco para el contenido principal */
+    padding: 2rem; /* Relleno interno */
+    border-radius: 0.5rem; /* Bordes ligeramente redondeados */
+    box-shadow: 0 0 20px rgba(0, 0, 0, 0.03); /* Sombra sutil para el contenido */
+}
+
+footer {
+    background-color: #343a40; /* Fondo oscuro para el footer */
+    color: #f8f9fa; /* Texto claro */
+    padding: 1.5rem 0; /* Relleno interno */
+    text-align: center;
+    margin-top: 3rem; /* Espacio superior */
+    box-shadow: 0 -2px 10px rgba(0, 0, 0, 0.05); /* Sombra superior */
+}
+
+    footer a {
+        color: #007bff; /* Color azul para enlaces en el footer */
+    }
+
+        footer a:hover {
+            color: #0056b3;
+        }
+
+.modal-content {
+    border-radius: 0.75rem; /* Bordes más redondeados para el modal */
+    box-shadow: 0 10px 20px rgba(0, 0, 0, 0.1); /* Sombra más pronunciada */
+}
+
+.modal-header {
+    border-bottom: 1px solid #e9ecef; /* Separador sutil */
+    padding: 1.5rem;
+}
+
+.modal-title {
+    font-weight: 600;
+    color: #343a40;
+}
+
+.modal-body {
+    padding: 2rem;
+}
+
+.modal-footer {
+    border-top: 1px solid #e9ecef; /* Separador sutil */
+    padding: 1.5rem;
+}
+
+/* Estilo para el spinner de carga */
+.spinner-border {
+    color: #007bff !important; /* Color azul para el spinner */
+}
+
+/* Hero Section */
+.hero-section {
+    background: linear-gradient(135deg, #f0f4f8 0%, #d9e2ec 100%); /* Degradado suave */
+    padding: 8rem 0;
+    margin-bottom: 3rem;
+    border-radius: 0.75rem; /* Bordes redondeados */
+    box-shadow: 0 5px 20px rgba(0, 0, 0, 0.05); /* Sombra sutil */
+}
+
+    .hero-section h1 {
+        color: #212529; /* Color oscuro para el título */
+        font-size: 3.5rem;
+    }
+
+    .hero-section p.lead {
+        color: #6c757d; /* Color gris para el subtítulo */
+        font-size: 1.25rem;
+    }
+
+.custom-btn-primary {
+    background-color: #007bff; /* Azul de Bootstrap */
+    border-color: #007bff;
+    padding: 0.8rem 2.5rem;
+    font-weight: 600;
+    border-radius: 50px; /* Botón pill-shaped */
+    transition: all 0.3s ease;
+}
+
+    .custom-btn-primary:hover {
+        background-color: #0056b3;
+        border-color: #0056b3;
+        transform: translateY(-2px); /* Efecto ligero de elevación */
+        box-shadow: 0 8px 25px rgba(0, 123, 255, 0.2);
+    }
+
+/* Cards de Sección */
+.section-card {
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+    border-radius: 0.75rem; /* Bordes redondeados para las cards */
+}
+
+    .section-card:hover {
+        transform: translateY(-5px); /* Efecto de elevación al pasar el ratón */
+        box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1) !important; /* Sombra más pronunciada */
+    }
+
+    .section-card .card-title {
+        font-size: 1.3rem;
+    }
+
+    .section-card .card-text {
+        font-size: 0.95rem;
+    }
+
+    /* Iconos en las cards */
+    .section-card .card-title i {
+        font-size: 1.5rem;
+        vertical-align: middle;
+    }
+
+/* Animaciones (requiere Animate.css) */
+/* Puedes ajustar los delays y la duración según tu preferencia */
+.animate__animated {
+    animation-duration: 0.8s;
+}
+
+.animate__delay-0-2s {
+    animation-delay: 0.2s;
+}
+
+.animate__delay-0-4s {
+    animation-delay: 0.4s;
+}
+
+.animate__delay-0-5s {
+    animation-delay: 0.5s;
+}
+/* Para el párrafo lead */
+.animate__delay-0-6s {
+    animation-delay: 0.6s;
+}
+
+.animate__delay-0-8s {
+    animation-delay: 0.8s;
+}
+
+.animate__delay-1s {
+    animation-delay: 1s;
+}
+
+.animate__delay-1-2s {
+    animation-delay: 1.2s;
+}
+
+/* Estilos específicos para la página de privacidad */
+.privacy-container {
+    padding: 3rem 0;
+}
+
+    .privacy-container h1 {
+        font-size: 2.8rem;
+        font-weight: 700;
+        color: #212529;
+    }
+
+    .privacy-container h2 {
+        font-size: 1.8rem;
+        font-weight: 600;
+        color: #343a40;
+        border-bottom: 2px solid #007bff; /* Subrayado azul */
+        padding-bottom: 0.5rem;
+        margin-bottom: 1.5rem;
+    }
+
+    .privacy-container p {
+        line-height: 1.8;
+        color: #495057;
+        margin-bottom: 1rem;
+    }
+
+    .privacy-container ul {
+        list-style: none; /* Elimina los puntos por defecto */
+        padding-left: 0;
+        margin-bottom: 2rem;
+    }
+
+        .privacy-container ul li {
+            position: relative;
+            padding-left: 1.8rem; /* Espacio para el icono personalizado */
+            margin-bottom: 0.8rem;
+            line-height: 1.6;
+            color: #495057;
+        }
+
+            .privacy-container ul li::before {
+                content: '\2022'; /* Código Unicode para un punto */
+                color: #007bff; /* Color azul para los puntos */
+                font-weight: bold;
+                display: inline-block;
+                width: 1em;
+                margin-left: -1.5em; /* Posiciona el punto */
+                position: absolute;
+                left: 0;
+                top: 0;
+            }
+
+    .privacy-container .lead {
+        font-style: italic;
+    }
+
+    .privacy-container .text-end {
+        font-size: 0.9rem;
+        color: #6c757d;
+    }
+
+/* Animaciones (si estás usando Animate.css) */
+/* Asegúrate de que Animate.css esté enlazado en _Layout.cshtml o en la vista */
+.animate__animated {
+    animation-duration: 0.8s;
+}
+
+.animate__delay-0-5s {
+    animation-delay: 0.5s;
+}
+
+.animate__delay-1s {
+    animation-delay: 1s;
+}
+
+.animate__delay-1-2s {
+    animation-delay: 1.2s;
+}
+
+.animate__delay-1-4s {
+    animation-delay: 1.4s;
+}
+
+.animate__delay-1-6s {
+    animation-delay: 1.6s;
+}
+
+.animate__delay-1-8s {
+    animation-delay: 1.8s;
+}
+
+.animate__delay-2s {
+    animation-delay: 2s;
+}
+
+.animate__delay-2-2s {
+    animation-delay: 2.2s;
+}
+
+.animate__delay-2-4s {
+    animation-delay: 2.4s;
+}
+
+.animate__delay-2-6s {
+    animation-delay: 2.6s;
+}
+
+.animate__delay-2-8s {
+    animation-delay: 2.8s;
+}
+
+.animate__delay-3s {
+    animation-delay: 3s;
+}
+
+.animate__delay-3-2s {
+    animation-delay: 3.2s;
+}
+
+.animate__delay-3-4s {
+    animation-delay: 3.4s;
+}
+
+.animate__delay-3-6s {
+    animation-delay: 3.6s;
+}
+
+.animate__delay-3-8s {
+    animation-delay: 3.8s;
+}
+
+.animate__delay-4s {
+    animation-delay: 4s;
+}
+
+.animate__delay-4-2s {
+    animation-delay: 4.2s;
+}
+
+.animate__delay-4-4s {
+    animation-delay: 4.4s;
+}
+
+.animate__delay-4-6s {
+    animation-delay: 4.6s;
+}
+
+.animate__delay-4-8s {
+    animation-delay: 4.8s;
 }
