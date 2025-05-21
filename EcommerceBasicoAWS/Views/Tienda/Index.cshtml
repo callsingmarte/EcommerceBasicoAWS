@@ -1,0 +1,177 @@
+﻿@using EcommerceBasicoAWS.ViewModels
+@using EcommerceBasicoAWS.Enums;
+@model ProductosViewModel
+
+<h1>Listado de Productos</h1>
+
+<form asp-action="Index" id="filtroForm" class="card p-4 shadow">
+    <input type="hidden" asp-for="@Model.SearchTypes" id="searchType" />
+    <div class="row mb-2">
+        <div class="col input-group">
+            <label asp-for="@Model.Filters.Nombre"></label>
+            <input asp-for="@Model.Filters.Nombre" class="form-control filtro-input" />
+        </div>
+        <div class="col input-group">
+            <label asp-for="@Model.Filters.Stock"></label>
+            <input asp-for="@Model.Filters.Stock" class="form-control filtro-input" />
+        </div>
+        <div class="col input-group">
+            <label asp-for="@Model.Filters.Precio"></label>
+            <input asp-for="@Model.Filters.Precio" class="form-control filtro-input" />
+        </div>
+    </div>
+    <div class="row mb-2">
+        <div class="col-6 input-group">
+            <label asp-for="@Model.ResultsPerPage" class="form-label">Resultados por Pagina</label>
+            <select asp-for="@Model.ResultsPerPage" class="form-control">
+                <option value="2">2</option>
+                <option value="5">5</option>
+                <option value="10">10</option>
+            </select>
+        </div>
+    </div>
+    <div class="input-group">
+        <button type="button" class="btn btn-info" onclick="searchQuery()">Buscar</button>
+        @if (Model.SearchTypes == SearchTypes.Search)
+        {
+            <button type="button" class="btn btn-secondary" onclick="limpiarFiltros()">Limpiar</button>
+        }
+    </div>
+</form>
+@if (Model.Productos!.Count() > 0)
+{
+    <div class="row row-cols-1 row-cols-md-2 row-cols-lg-3 row-cols-xl-4 g-4">
+        @foreach (ProductoCategoriasViewModel productoCategorias in Model.Productos!)
+        {
+            <div class="col">
+                <div class="card h-100 shadow">
+                    @if (!string.IsNullOrEmpty(productoCategorias.MainImageUrl))
+                    {
+                        <div class="card-img-top">
+                            <img src="@productoCategorias.MainImageUrl" class="img-fluid object-fit-cover" style="height: 200px;">
+                        </div>
+                    }
+                    <div class="card-header">
+                        <h5 class="card-title">@productoCategorias.Producto.Nombre</h5>
+                        @foreach (Categoria categoria in productoCategorias.Categorias)
+                        {
+                            <span class="badge bg-secondary">@categoria.Nombre</span>
+                        }
+                    </div>
+                    <div class="card-body">
+                        <div class="row">
+                            <p class="col card-text">Stock: @productoCategorias.Producto.Stock</p>
+                            <div class="col">
+                                <p class="card-text text-end badge bg-warning">@productoCategorias.Producto.Precio €</p>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="card-footer">
+                        <a asp-action="DetallesProducto" asp-route-idProducto="@productoCategorias.Producto.IdProducto" class="btn btn-info">Detalles</a>
+                        <button type="button" class="btn btn-warning" data-bs-toggle="modal" data-bs-target="#confirmAddToCart" 
+                            data-producto='@Json.Serialize(productoCategorias.Producto)' data-producto-main-image-url="@productoCategorias.MainImageUrl" >
+                           Añadir al carrito
+                        </button>
+                    </div>
+                </div>
+            </div>
+        }
+    </div>
+
+    @if (Model.TotalResults > 0)
+    {
+        int totalPages = (int)Math.Ceiling((double)Model.TotalResults / Model.ResultsPerPage);
+        <nav class="mt-4">
+            <ul class="pagination">
+                <li class="page-item @(Model.CurrentPage == 0 ? "disabled" : "" )">
+                    <a asp-action="Index" asp-route-CurrentPage="@(Model.CurrentPage - 1)" class="page-link">Previous</a>
+                </li>
+                @for (int pageNumber = 0; pageNumber < totalPages; pageNumber++)
+                {
+                    <li class="page-item @(Model.CurrentPage == pageNumber + 1 ? "active" : "")">
+                        <a class="page-link" asp-action="Index" asp-route-CurrentPage="@(pageNumber + 1)" aria-current="page">@(pageNumber + 1)</a>
+                    </li>
+                }
+                <li class="page-item @(Model.CurrentPage == totalPages ? "disabled" : "" )">
+                    <a class="page-link" asp-action="Index" asp-route-CurrentPage="@(Model.CurrentPage + 1)">Next</a>
+                </li>
+            </ul>
+        </nav>
+    }
+}
+
+<div class="modal fade" id="confirmAddToCart" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <form asp-action="AddCarritoItem">
+                <input type="hidden" id="IdProductoToAdd" name="idProducto" />
+                <input type="hidden" id="ProductoMainImageUrl" name="productoMainImageUrl" />
+                <div class="modal-header">
+                    <h1 class="modal-title fs-5" id="exampleModalLabel">Añadir Al carrito</h1>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <p>¿Seguro que quieres añadir al carrito esto?</p>
+                    <div id="productoDetalles">
+                    </div>
+                    <div class="row">
+                        <div class="input-group">
+                            <label for="cantidad">Cantidad</label>
+                            <input id="cantidad" name="cantidad" type="number" min="1"/>
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cerrar</button>
+                    <button type="submit" class="btn btn-warning">Añadir al carrito</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<script>
+    function searchQuery() {
+        document.getElementById('searchType').value = @((int)SearchTypes.Search)
+        document.getElementById('filtroForm').submit();
+    }
+
+    function limpiarFiltros() {
+        const inputs = document.querySelectorAll('.filtro-input');
+        inputs.forEach(input => input.value = '');
+        document.getElementById('searchType').value = @((int)SearchTypes.List)
+        document.getElementById('filtroForm').submit();
+    }
+    
+    const confirmAddToCartModal = document.getElementById('confirmAddToCart');
+    confirmAddToCartModal.addEventListener('show.bs.modal', event => {
+        const button = event.relatedTarget;
+        const producto = JSON.parse(button.getAttribute('data-producto'));
+        const productoMainImageUrl = button.getAttribute('data-producto-main-image-url');
+        const productoDetallesDiv = confirmAddToCartModal.querySelector('#productoDetalles');
+        productoDetallesDiv.innerHTML = ''
+        console.log("Producto", producto);
+        const idProductoInput = confirmAddToCartModal.querySelector('#IdProductoToAdd');
+        idProductoInput.value = producto.idProducto;
+        const productoMainImageUrlInput = confirmAddToCartModal.querySelector('#ProductoMainImageUrl');
+        productoMainImageUrlInput.value = productoMainImageUrl;
+
+        confirmAddToCartModal.querySelector("#productoDetalles").innerHTML = `
+            <div class="row">
+                <div class="col-10">
+                    <p>Nombre: ${producto.nombre}</p>
+                </div>
+                <div class="col-2">
+                    <span class="badge bg-warning text-end">${producto.precio} €</p>
+                </div>
+            </div>
+            <div class="row">
+                <div class="col">
+                    <p>Descripcion: </p>
+                    <pre>${producto.descripcion}</pre>
+                </div>
+            </div>
+        `;
+    });
+
+</script>                  
