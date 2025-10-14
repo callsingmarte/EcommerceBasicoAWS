@@ -81,7 +81,7 @@ namespace EcommerceBasicoAWS.Repositories
 
         public async Task<Carrito?> GetUserCarrito(string userId)
         {
-            Carrito? carrito = await _context.Carritos.FirstOrDefaultAsync(c => c.IdUsuario == userId);
+            Carrito? carrito = await _context.Carritos.Include(c => c.ItemsCarrito).ThenInclude(item => item.Producto).FirstOrDefaultAsync(c => c.IdUsuario == userId);
 
             return carrito;
         }
@@ -96,13 +96,32 @@ namespace EcommerceBasicoAWS.Repositories
 
                 if (itemCarrito != null) {
                     carrito.ItemsCarrito.Remove(itemCarrito);
-                    carrito.Total -= itemCarrito.Subtotal;
+                    carrito.Total -= itemCarrito.Subtotal * itemCarrito.Cantidad;
                     _context.SaveChanges();
                     response = true;
                 }
             }
 
             return response;
+        }
+
+        public async Task<bool> UpdateCarritoItem(ItemCarrito itemCarrito)
+        {
+            _context.ItemsCarrito.Update(itemCarrito);
+            Carrito? carrito = _context.Carritos.SingleOrDefault(c => c.IdCarrito == itemCarrito.IdCarrito);
+            if(carrito != null)
+            {
+                decimal subtotal = 0;
+                foreach(ItemCarrito item in carrito.ItemsCarrito)
+                {
+                    subtotal += item.Subtotal * item.Cantidad;
+                }
+
+                carrito.Total = subtotal;
+            }
+            _context.SaveChanges();
+
+            return true;
         }
     }
 }

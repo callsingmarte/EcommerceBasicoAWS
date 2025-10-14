@@ -12,13 +12,11 @@ namespace EcommerceBasicoAWS.Controllers
     {
         private readonly IProductoService _productoService;
         private readonly ICategoriaService _categoriaService;
-        private readonly ICarritoService _carritoService;
 
         public TiendaController(IProductoService productoService, ICategoriaService categoriaService, ICarritoService carritoService)
         {
             _productoService = productoService;
             _categoriaService = categoriaService;
-            _carritoService = carritoService;
         }
 
         public async Task<IActionResult> Index(ProductosViewModel productosVm)
@@ -43,65 +41,6 @@ namespace EcommerceBasicoAWS.Controllers
             };
 
             return View(vm);
-        }
-
-        [HttpGet]
-        public async Task<IActionResult> GetCarrito()
-        {
-            var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
-            Carrito? carrito = await _carritoService.GetUserCarrito(userId);
-
-            return PartialView("_CarritoPartial", carrito);
-        }
-
-        [HttpPost]
-        public async Task<IActionResult> AddCarritoItem(Guid idProducto, int cantidad, string productoMainImageUrl)
-        {
-            var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
-
-            Producto? producto = await _productoService.GetProducto(idProducto);
-
-            if (producto != null) {
-                ItemCarrito itemCarrito = new ItemCarrito()
-                {
-                    IdProducto = idProducto,
-                    Cantidad = cantidad,
-                    FechaCreacion = DateTime.Now,
-                    PrecioUnitario = producto.Precio,
-                    Subtotal = producto.Precio * cantidad,
-                    MainImageUrl = productoMainImageUrl,                                        
-                };
-                Carrito carrito = await _carritoService.CreateOrAddUserCarrito(userId, itemCarrito);
-            }
-
-            return RedirectToAction(nameof(Index));
-        }
-
-        [HttpPost]
-        public async Task<IActionResult> RemoveCarritoItem(Guid idItemCarrito)
-        {
-            var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
-            bool response = await _carritoService.RemoveItemCarrito(userId, idItemCarrito);
-
-            return Ok(response);
-        }
-
-        [HttpPost]
-        public async Task<IActionResult> ClearCarritoItems()
-        {
-            var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
-            bool response = await _carritoService.ClearCarritoItems(userId);
-
-            return Ok(response);
-        }
-
-        [HttpPost]
-        public async Task<IActionResult> DeleteUserCarrito()
-        {
-            var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
-            bool response = await _carritoService.DeleteUserCarrito(userId);
-
-            return Ok(response);
         }
 
         public async Task<IActionResult> PedidoDetalles()

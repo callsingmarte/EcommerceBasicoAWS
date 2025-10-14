@@ -11,5 +11,6 @@ namespace EcommerceBasicoAWS.Interfaces
         public Task<bool> AddItemCarrito(Carrito carrito, ItemCarrito itemCarrito);
         public Task<bool> DeleteUserCarrito(string userId);
         public Task<bool> ClearCarritoItems(string userId);
+        public Task<bool> UpdateCarritoItem(ItemCarrito itemCarrito);
     }
 }

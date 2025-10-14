@@ -9,7 +9,6 @@ namespace EcommerceBasicoAWS.Models
         public Guid IdItemCarrito { get; set; }
         [ForeignKey(nameof(Carrito))]
         public Guid IdCarrito { get; set; }
-        public virtual Carrito? Carrito { get; set; }
         [ForeignKey(nameof(Producto))]
         public Guid IdProducto { get; set; }
         public virtual Producto? Producto { get; set; }

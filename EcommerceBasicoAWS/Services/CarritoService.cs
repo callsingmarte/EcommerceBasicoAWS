@@ -64,5 +64,13 @@ namespace EcommerceBasicoAWS.Services
 
             return response;
         }
+
+        public async Task<bool> UpdateCarritoItem(ItemCarrito itemCarrito)
+        {
+            bool response =  await _carritoRepository.UpdateCarritoItem(itemCarrito);
+            
+            return response;
+        }
+
     }
 }
