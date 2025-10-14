@@ -19,11 +19,9 @@ namespace EcommerceBasicoAWS.Repositories
         {
             try
             {
-                if (carrito.ItemsCarrito == null) { 
-                    carrito.ItemsCarrito = new List<ItemCarrito>();
-                }
-                carrito.ItemsCarrito.Add(itemCarrito);
+                _context.ItemsCarrito.Add(itemCarrito);
                 carrito.Total += itemCarrito.Subtotal;
+                _context.Carritos.Update(carrito);
                 _context.SaveChanges();
                 return true;
             }
@@ -91,12 +89,12 @@ namespace EcommerceBasicoAWS.Repositories
             Carrito? carrito = await GetUserCarrito(userId);
             bool response = false;
             if(carrito != null)
-            {
+            {                
                 ItemCarrito? itemCarrito = carrito.ItemsCarrito.SingleOrDefault(i => i.IdItemCarrito == idItemCarrito);
 
                 if (itemCarrito != null) {
-                    carrito.ItemsCarrito.Remove(itemCarrito);
-                    carrito.Total -= itemCarrito.Subtotal * itemCarrito.Cantidad;
+                    carrito.Total -= itemCarrito.Subtotal;
+                    _context.ItemsCarrito.Remove(itemCarrito);
                     _context.SaveChanges();
                     response = true;
                 }
@@ -114,7 +112,8 @@ namespace EcommerceBasicoAWS.Repositories
                 decimal subtotal = 0;
                 foreach(ItemCarrito item in carrito.ItemsCarrito)
                 {
-                    subtotal += item.Subtotal * item.Cantidad;
+                    itemCarrito.Subtotal = itemCarrito.PrecioUnitario * itemCarrito.Cantidad;
+                    subtotal += item.Subtotal;
                 }
 
                 carrito.Total = subtotal;

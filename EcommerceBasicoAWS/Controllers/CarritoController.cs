@@ -22,7 +22,10 @@ namespace EcommerceBasicoAWS.Controllers
         public async Task<IActionResult> Index()
         {
             var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
-            Carrito? carrito = await _carritoService.GetUserCarrito(userId);
+            Carrito? carrito = null;
+            if (userId != null) {
+                carrito = await _carritoService.GetUserCarrito(userId);
+            }
 
             return View(carrito);
         }

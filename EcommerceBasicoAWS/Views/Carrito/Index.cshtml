@@ -22,6 +22,7 @@
                                     <th>Producto</th>
                                     <th>Cantidad</th>
                                     <th>Precio Unitario</th>
+                                    <th>Subtotal</th>
                                     <th>Acción</th>
                                 </tr>
                             </thead>
@@ -51,6 +52,9 @@
                                                     remove
                                                 </span>
                                             </button>
+                                        </td>
+                                        <td>
+                                            <span class="badge bg-warning text-dark">@item.PrecioUnitario €</span>
                                         </td>
                                         <td>
                                             <span class="badge bg-warning text-dark">@item.Subtotal €</span>
@@ -198,6 +202,7 @@
                                             <th>Producto</th>
                                             <th>Cantidad</th>
                                             <th>Precio Unitario</th>
+                                            <th>Subtotal</th>
                                             <th>Acción</th>
                                         </tr>
                                     </thead>
@@ -231,6 +236,9 @@
                                                     remove
                                                 </span>
                                             </button>
+                                        </td>
+                                        <td>
+                                            <span class="badge bg-warning text-dark">${item.precioUnitario}€</span>
                                         </td>
                                         <td>
                                             <span class="badge bg-warning text-dark">${item.subtotal} €</span>

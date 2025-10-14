@@ -18,8 +18,6 @@ namespace EcommerceBasicoAWS.Services
         {
             Carrito? carrito = await GetUserCarrito(userId);
 
-            itemCarrito.IdItemCarrito = new Guid();
-
             if (carrito == null) {
                 Carrito carritoToAdd = new Carrito()
                 {
@@ -31,10 +29,38 @@ namespace EcommerceBasicoAWS.Services
                carrito = await _carritoRepository.CreateCarrito(carritoToAdd);
             }
 
-            itemCarrito.IdCarrito = carrito.IdCarrito;
-            await _carritoRepository.AddItemCarrito(carrito, itemCarrito);
+            if (carrito != null) {
+                //Comprobamos si ya existe un elemento con el mismo producto
+                if (carrito.ItemsCarrito != null && carrito.ItemsCarrito.Count() > 0)
+                {
+                    ItemCarrito? itemCarritoExists = carrito.ItemsCarrito.FirstOrDefault(item => item.IdProducto == itemCarrito.IdProducto);
 
-            return carrito;
+                    if(itemCarritoExists != null)
+                    {
+                        if(itemCarritoExists.Producto!.Stock >= itemCarrito.Cantidad + 1)
+                        {
+                            itemCarritoExists.Cantidad++;
+                            itemCarritoExists.Subtotal = itemCarritoExists.Cantidad * itemCarritoExists.PrecioUnitario;
+                        }
+
+                        bool response = await _carritoRepository.UpdateCarritoItem(itemCarritoExists);
+                        carrito = await _carritoRepository.GetUserCarrito(userId);
+                    }
+                    else
+                    {
+                        itemCarrito.IdItemCarrito = Guid.NewGuid();
+                        itemCarrito.IdCarrito = carrito.IdCarrito;
+                        await _carritoRepository.AddItemCarrito(carrito, itemCarrito);
+                    }
+                }
+                else {
+                    itemCarrito.IdItemCarrito = Guid.NewGuid();
+                    itemCarrito.IdCarrito = carrito.IdCarrito;
+                    await _carritoRepository.AddItemCarrito(carrito, itemCarrito);
+                }
+            }
+
+            return carrito!;
         }
 
         public async Task<Carrito?> GetUserCarrito(string userId)
