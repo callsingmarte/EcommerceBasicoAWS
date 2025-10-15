@@ -48,7 +48,7 @@
                                 <a class="nav-link text-dark" asp-area="" asp-controller="Tienda" asp-action="Index">Tienda</a>
                             </li>
                             <li type="nav-item">
-                                <a class="nav-link text-dark" asp-area="" asp-controller="Carrito" asp-action="Index"> Carrito </a>
+                                <a id="carritoLink" class="nav-link text-dark position-relative" asp-area="" asp-controller="Carrito" asp-action="Index"> Carrito </a>
                             </li>
                         }
                     </ul>
@@ -72,56 +72,30 @@
         </div>
     </footer>
 
-    <div class="modal fade" id="shoppingCartModal" tabindex="-1" aria-labelledby="shoppingCartModalLabel" aria-hidden="true">
-        <div class="modal-dialog modal-lg">
-            <div class="modal-content">
-                <div class="modal-header">
-                    <h5 class="modal-title" id="shoppingCartModalLabel">Tu Carrito de Compras</h5>
-                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-                </div>
-                <div class="modal-body" id="shoppingCartModalBody">
-                    <div class="text-center p-5">
-                        <div class="spinner-border text-primary" role="status">
-                            <span class="visually-hidden">Cargando carrito...</span>
-                        </div>
-                        <p class="mt-2">Cargando carrito...</p>
-                    </div>
-                </div>
-                <div class="modal-footer">
-                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cerrar</button>
-                </div>
-            </div>
-        </div>
-    </div>
-
     <script src="~/lib/jquery/dist/jquery.min.js"></script>
     <script src="~/lib/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
     <script src="~/js/site.js" asp-append-version="true"></script>
-    <script>
-        $(function(){
-            $('#shoppingCartModal').on('show.bs.modal', function (event) {
-                const modalBody = $('#shoppingCartModalBody');
-                modalBody.html(`
-                    <div class="text-center p-5">
-                        <div class="spinner-border text-primary" role="status">
-                            <span class="visually-hidden">Cargando carrito...</span>
-                        </div>
-                        <p class="mt-2">Cargando carrito...</p>
-                    </div>
-                `);
-                $.ajax({
-                    url: '@Url.Action("GetCarrito", "Tienda")',
-                    type: 'GET',
-                    success: function (data) {
-                        modalBody.html(data);
-                    },
-                    error: function (xhr, status, error) {
-                        modalBody.html('<p class="text-danger">No se pudo cargar el carrito. Inténtalo de nuevo más tarde.</p>');
-                        console.error("Error loading cart:", status, error);
+    <script>        
+        getCarritoItemsCount();
+
+        function getCarritoItemsCount() {
+            $.ajax({
+                url: '@Url.Action("GetCarritoItemsCount", "Carrito")',
+                type: 'GET',
+                success: function (data) {
+                    if (data > 0) {
+                        $("#carritoLink").empty();
+                        $("#carritoLink").append(`Carrito <span class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger">${data}</span>`);
+                    } else {
+                        $("#carritoLink").empty();
+                        $("#carritoLink").append(`Carrito`);
                     }
-                });
+                },
+                error: function (xhr, status, error) {
+                    console.log('Error ', status, error);
+                }
             });
-        });
+        }
     </script>
     @await RenderSectionAsync("Scripts", required: false)
 </body>

@@ -68,11 +68,11 @@
                     </div>
                     <div class="card-footer">
                         <a asp-action="DetallesProducto" asp-route-idProducto="@productoCategorias.Producto.IdProducto" class="btn btn-info">Detalles</a>
-                        <form asp-controller="Carrito" asp-action="AddCarritoItem" method="post">
+                        <form id="formAddCarritoItem" asp-controller="Carrito" asp-action="AddCarritoItem" method="post">
                             <input type="hidden" id="IdProductoToAdd" name="idProducto" value="@productoCategorias.Producto.IdProducto" />
                             <input type="hidden" id="ProductoMainImageUrl" name="productoMainImageUrl" value="@productoCategorias.MainImageUrl" />
                             <input type="hidden" id="cantidad" name="cantidad" value="1" />
-                            <button type="submit" class="btn btn-warning" >
+                            <button id="btnAddCarrito" type="submit" onclick="updateCarritoBadge()" class="btn btn-warning" >
                                Añadir al carrito
                             </button>
                         </form>
@@ -116,5 +116,5 @@
         document.getElementById('searchType').value = @((int)SearchTypes.List)
         document.getElementById('filtroForm').submit();
     }
-    
+
 </script>                  

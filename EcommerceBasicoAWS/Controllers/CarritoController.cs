@@ -3,6 +3,7 @@ using EcommerceBasicoAWS.Models;
 using EcommerceBasicoAWS.Services;
 using EcommerceBasicoAWS.ViewModels;
 using Microsoft.AspNetCore.Mvc;
+using System.Runtime.CompilerServices;
 using System.Security.Claims;
 
 namespace EcommerceBasicoAWS.Controllers
@@ -39,6 +40,34 @@ namespace EcommerceBasicoAWS.Controllers
             return Json(carrito);
         }
 
+        [HttpGet]
+        public async Task<IActionResult> GetCarritoItemsCount()
+        {
+            var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+            Carrito? carrito = await _carritoService.GetUserCarrito(userId);
+
+            int carritoCount = carrito.ItemsCarrito != null ? carrito.ItemsCarrito.Count() : 0;
+
+            return Ok(carritoCount);
+        }
+
+        [HttpGet]
+        public async Task<IActionResult> GetItemCarritoQuantity(Guid idProducto)
+        {
+            var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+            Carrito? carrito = await _carritoService.GetUserCarrito(userId);
+            Producto? producto = await _productoService.GetProducto(idProducto);
+
+            if (producto != null && carrito != null && carrito.ItemsCarrito != null && carrito.ItemsCarrito.Count() > 0)
+            {
+                ItemCarrito? itemCarrito = carrito.ItemsCarrito.SingleOrDefault(item => item.IdProducto == idProducto);
+
+                return itemCarrito != null ? Ok(itemCarrito.Cantidad) : Ok("Todavia no se ha añadido al carrito");
+            }
+
+            return BadRequest();
+        }
+
 
         [HttpPost]
         public async Task<IActionResult> AddCarritoItem(Guid idProducto, int cantidad, string productoMainImageUrl)
@@ -68,7 +97,7 @@ namespace EcommerceBasicoAWS.Controllers
         }
 
         [HttpPost]
-        public async Task<IActionResult> UpdateCarrito(Guid idProducto, int cantidad)
+        public async Task<IActionResult> UpdateCarrito(Guid idProducto, int cantidad, string productoMainImageUrl = "")
         {
             var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
 
@@ -95,7 +124,26 @@ namespace EcommerceBasicoAWS.Controllers
                         }
 
                         itemCarrito.Cantidad = cantidad;
+                        itemCarrito.Subtotal = itemCarrito.Producto.Precio * itemCarrito.Cantidad;
                         bool response = await _carritoService.UpdateCarritoItem(itemCarrito);
+                        if (response) {
+                            return Ok("Carrito actualizado");
+                        }
+                    }
+                    else
+                    {
+                        itemCarrito = new ItemCarrito()
+                        {
+                            IdCarrito = carrito.IdCarrito,
+                            IdProducto = idProducto,
+                            Cantidad = cantidad,
+                            FechaCreacion = DateTime.Now,
+                            PrecioUnitario = producto.Precio,
+                            Subtotal = producto.Precio * cantidad,
+                            MainImageUrl = productoMainImageUrl,
+                        };
+                        bool response = await _carritoService.AddOrUpdateItemCarrito(itemCarrito);
+
                         if (response) {
                             return Ok("Carrito actualizado");
                         }
@@ -122,7 +170,7 @@ namespace EcommerceBasicoAWS.Controllers
                 if(item != null)
                 {
                     item.Cantidad = add ? ++item.Cantidad : --item.Cantidad;
-
+                    item.Subtotal = item.Producto.Precio * item.Cantidad;
                     if (item.Cantidad <= 0)
                     {
                         return Ok("No se ha podido actualizar el carrito");
@@ -172,6 +220,15 @@ namespace EcommerceBasicoAWS.Controllers
             Carrito? carrito = await _carritoService.GetUserCarrito(userId);
 
             return View(nameof(Index), carrito);
+        }
+
+        [HttpDelete]
+        public async Task<IActionResult> ClearCarritoItemsAjax()
+        {
+            var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+            bool response = await _carritoService.ClearCarritoItems(userId);
+
+            return Ok(response ? "Carrito vaciado" : "No se ha podido vaciar el carrito");
         }
 
         [HttpPost]

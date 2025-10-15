@@ -15,14 +15,43 @@ namespace EcommerceBasicoAWS.Repositories
            _context = context;
         }
 
-        public async Task<bool> AddItemCarrito(Carrito carrito, ItemCarrito itemCarrito)
+        public async Task<bool> AddOrUpdateItemCarrito(ItemCarrito itemCarrito)
         {
             try
             {
-                _context.ItemsCarrito.Add(itemCarrito);
-                carrito.Total += itemCarrito.Subtotal;
-                _context.Carritos.Update(carrito);
-                _context.SaveChanges();
+                Carrito? carrito = await _context.Carritos.SingleOrDefaultAsync(c => c.IdCarrito == itemCarrito.IdCarrito);
+
+                if (carrito == null) {
+                    new Exception("No dispone de un carrito");
+                }
+                else
+                {                    
+                    ItemCarrito? itemCarritoExists = carrito.ItemsCarrito != null ? 
+                        carrito.ItemsCarrito.SingleOrDefault(item => item.IdProducto == itemCarrito.IdProducto) : null;
+
+                    if (itemCarritoExists != null)
+                    {
+                        itemCarritoExists.Cantidad = itemCarrito.Cantidad;
+                        itemCarritoExists.Subtotal = itemCarrito.Subtotal;
+                        _context.ItemsCarrito.Update(itemCarritoExists);
+                        decimal subtotal = 0;
+                        foreach (ItemCarrito item in carrito.ItemsCarrito)
+                        {
+                            subtotal += item.Subtotal;
+                        }
+                        carrito.Total = subtotal;
+                    }
+                    else
+                    {
+                        _context.ItemsCarrito.Add(itemCarrito);
+                        carrito.Total += itemCarrito.Subtotal;
+                        _context.Carritos.Update(carrito);
+                    }
+
+
+                    _context.SaveChanges();
+                }
+
                 return true;
             }
             catch (Exception ex) {
@@ -112,8 +141,14 @@ namespace EcommerceBasicoAWS.Repositories
                 decimal subtotal = 0;
                 foreach(ItemCarrito item in carrito.ItemsCarrito)
                 {
-                    itemCarrito.Subtotal = itemCarrito.PrecioUnitario * itemCarrito.Cantidad;
-                    subtotal += item.Subtotal;
+                    if(item.IdProducto == itemCarrito.IdProducto)
+                    {
+                        subtotal += itemCarrito.Subtotal;
+                    }
+                    else
+                    {
+                        subtotal += item.Subtotal;
+                    }
                 }
 
                 carrito.Total = subtotal;

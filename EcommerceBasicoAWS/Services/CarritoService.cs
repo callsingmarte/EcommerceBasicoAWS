@@ -1,6 +1,8 @@
-﻿using EcommerceBasicoAWS.Interfaces;
+﻿using AspNetCoreGeneratedDocument;
+using EcommerceBasicoAWS.Interfaces;
 using EcommerceBasicoAWS.Models;
 using Microsoft.AspNetCore.Identity;
+using Microsoft.Identity.Client;
 using System.CodeDom;
 
 namespace EcommerceBasicoAWS.Services
@@ -50,17 +52,24 @@ namespace EcommerceBasicoAWS.Services
                     {
                         itemCarrito.IdItemCarrito = Guid.NewGuid();
                         itemCarrito.IdCarrito = carrito.IdCarrito;
-                        await _carritoRepository.AddItemCarrito(carrito, itemCarrito);
+                        await _carritoRepository.AddOrUpdateItemCarrito(itemCarrito);
                     }
                 }
                 else {
                     itemCarrito.IdItemCarrito = Guid.NewGuid();
                     itemCarrito.IdCarrito = carrito.IdCarrito;
-                    await _carritoRepository.AddItemCarrito(carrito, itemCarrito);
+                    await _carritoRepository.AddOrUpdateItemCarrito(itemCarrito);
                 }
             }
 
             return carrito!;
+        }
+
+        public async Task<bool> AddOrUpdateItemCarrito(ItemCarrito itemCarrito)
+        {
+            bool response = await _carritoRepository.AddOrUpdateItemCarrito(itemCarrito);
+
+            return response;
         }
 
         public async Task<Carrito?> GetUserCarrito(string userId)

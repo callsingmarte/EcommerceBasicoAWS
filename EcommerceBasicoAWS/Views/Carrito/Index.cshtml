@@ -175,6 +175,20 @@
         });
     }
 
+    function EmptyCarrito(){
+        $.ajax({
+            url: '@Url.Action("ClearCarritoItemsAjax", "Carrito")',
+            type: 'DELETE',
+            success: function (data) {
+                console.log(data)
+                getCarrito();
+            },
+            error: function (xhr, status, error) {
+                console.error("Error loading cart:", status, error);
+            }
+        });
+    }
+
     function getCarrito(){
         $.ajax({
             url: '@Url.Action("GetCarrito", "Carrito")',
@@ -269,9 +283,7 @@
                     `)
                     $("#carritoContainer .card").append(`
                         <div class="card-footer d-flex justify-content-between">
-                            <form asp-action="ClearCarritoItems" method="post">
-                                <button type="submit" class="btn btn-outline-danger">Vaciar Carrito</button>
-                            </form>
+                            <button type="button" class="btn btn-outline-danger" onClick="EmptyCarrito()" >Vaciar Carrito</button>
                             <form asp-action="Checkout" method="get">
                                 <button type="submit" class="btn btn-success">Confirmar Pedido y Pagar</button>
                             </form>
@@ -284,10 +296,30 @@
                         </div>
                     `);
                 }
+                getCarritoItemsCount()
             },
             error: function (xhr, status, error) {
 
                 console.error("Error loading cart:", status, error);
+            }
+        });
+    }
+
+    function getCarritoItemsCount() {
+        $.ajax({
+            url: '@Url.Action("GetCarritoItemsCount", "Carrito")',
+            type: 'GET',
+            success: function (data) {
+                if (data > 0) {
+                    $("#carritoLink").empty();
+                    $("#carritoLink").append(`Carrito <span class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger">${data}</span>`);
+                } else {
+                    $("#carritoLink").empty();
+                    $("#carritoLink").append(`Carrito`);
+                }
+            },
+            error: function (xhr, status, error) {
+                console.log('Error ', status, error);
             }
         });
     }

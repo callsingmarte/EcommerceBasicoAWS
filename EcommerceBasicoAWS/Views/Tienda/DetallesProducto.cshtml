@@ -1,38 +1,156 @@
 ﻿@using EcommerceBasicoAWS.ViewModels
 @model ProductoCategoriasDetallesViewModel
 
-<div class="card">
-    <div class="card-header">
-        <div class="row">
-            <div class="col-10">
-                <h1>Detalles @Model.Producto.Nombre</h1>
+@{
+    ViewData["Title"] = "DetallesProducto";
+}
+
+<div class="row">
+    <div class="col-8">
+        <div class="card">
+            <div class="card-header">
+                <div class="row">
+                    <div class="col-10">
+                        <h1>Detalles @Model.Producto.Nombre</h1>
+                    </div>
+                </div>
+                <div class="row">
+                    <div class="col-10">
+                        @foreach (Categoria categoria in Model.Categorias)
+                        {
+                            <span class="badge bg-secondary">@categoria.Nombre</span>
+                        }
+                    </div>
+                    <div class="col-2">
+                        <p class="text-end badge bg-warning">@Model.Producto.Precio €</p>
+                    </div>
+                </div>
             </div>
-            <div class="col-2 text-end">
-                <a asp-action="" class="btn btn-outline-warning">Añadir al Carrito</a>
+            <div class="card-body">
+                <p class="card-text">Stock: @Model.Producto.Stock</p>
+                <pre class="card-text">
+                @Model.Producto.Descripcion
+            </pre>
             </div>
-        </div>
-        <div class="row">
-            <div class="col-10">
-                @foreach (Categoria categoria in Model.Categorias)
-                {
-                    <span class="badge bg-secondary">@categoria.Nombre</span>
-                }
-            </div>
-            <div class="col-2">
-                <p class="text-end badge bg-warning">@Model.Producto.Precio €</p>
+            <div class="card-footer">
+                <div class="text-center">
+                    <a asp-action="" class="btn btn-outline-success">Comprar</a>
+                </div>
             </div>
         </div>
     </div>
-    <div class="card-body">
-        <p class="card-text">Stock: @Model.Producto.Stock</p>
-        <pre class="card-text">
-            @Model.Producto.Descripcion
-        </pre>
-    </div>
-    <div class="card-footer">
-        <div class="text-center">
-            <a asp-action="" class="btn btn-outline-success">Comprar</a>
+    <div class="col-4">
+        <div class="card">
+            <div class="card-body">
+                <div class="row">
+                    <div class="col-4">
+                        <p>Cantidad: </p>
+                    </div>
+                    <div class="col-8">
+                        <button type="button" class="btn border" onclick="AddQuantity()">
+                            <span class="material-symbols-outlined">
+                                add
+                            </span>
+                        </button>
+                        <input class="text-center" id="cantidad" type="number" name="cantidad" min="1" placeholder="1" onchange="UpdateQuantity()" style="width: 75px;" />
+                        <button type="button" class="btn border" onclick="ReduceQuantity()">
+                            <span class="material-symbols-outlined">
+                                remove
+                            </span>
+                        </button>
+                    </div>
+                </div>
+            </div>
+            <div class="card-footer p-4">
+                <button type="button" class="w-100 btn btn-outline-warning" onclick="AddToCart()">Añadir al Carrito</button>
+            </div>
         </div>
     </div>
 </div>
 <a asp-action="Index" class="btn btn-dark">Volver al listado</a>
+
+<script src="~/lib/jquery/dist/jquery.min.js"></script>
+<script>
+    let idProducto = '@Model.Producto.IdProducto';
+    let stock = @Model.Producto.Stock;
+
+    console.log("Hola mundo " + idProducto)
+
+    GetItemCarritoQuantity();
+
+    function AddQuantity(){
+        let cantidad = parseInt($("#cantidad").val()) ? parseInt($("#cantidad").val()) : 1;
+        cantidad++;
+        
+        cantidad > stock  ? $("#cantidad").val(stock) : $("#cantidad").val(cantidad);
+    }
+
+    function ReduceQuantity(){
+        let cantidad = parseInt($("#cantidad").val()) ? parseInt($("#cantidad").val()) : 1;
+        cantidad--;
+
+        cantidad > 0 ? $("#cantidad").val(cantidad) : $("#cantidad").val(1);
+    }
+
+    function UpdateQuantity(){
+        let cantidad = parseInt($("#cantidad").val()) ? parseInt($("#cantidad").val()) : 1;
+
+        if(cantidad > 0){
+            cantidad > stock ? $("#cantidad").val(stock) : $("#cantidad").val(cantidad);
+        }else {
+            $("#cantidad").val(1)
+        }
+    }
+
+    function AddToCart(){        
+        $.ajax({
+            url: '@Url.Action("UpdateCarrito", "Carrito")',
+            type: 'POST',
+            data: { idProducto: idProducto, cantidad: $("#cantidad").val() },
+            success: function (data) {
+                console.log(data)
+                getCarritoItemsCount();
+            },
+            error: function (xhr, status, error) {
+                console.error("Error loading cart:", status, error);
+            }
+        });
+    }
+
+    function GetItemCarritoQuantity(){
+        $.ajax({
+            url: '@Url.Action("GetItemCarritoQuantity", "Carrito")',
+            type: 'GET',
+            data: { idProducto: idProducto },
+            success: function (data) {
+                $("#cantidad").val(data);
+            },
+            error: function (xhr, status, error) {
+                console.error("Error loading cart:", status, error);
+            }
+        });
+    }
+
+    
+
+    function getCarritoItemsCount() {
+        $.ajax({
+            url: '@Url.Action("GetCarritoItemsCount", "Carrito")',
+            type: 'GET',
+            success: function (data) {
+                if (data > 0) {
+                    $("#carritoLink").empty();
+                    $("#carritoLink").append(`Carrito <span class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger">${data}</span>`);
+                } else {
+                    $("#carritoLink").empty();
+                    $("#carritoLink").append(`Carrito`);
+                }
+            },
+            error: function (xhr, status, error) {
+                console.log('Error ', status, error);
+            }
+        });
+    }
+
+</script>
+                            
