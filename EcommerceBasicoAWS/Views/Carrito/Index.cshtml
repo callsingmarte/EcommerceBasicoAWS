@@ -1,0 +1,327 @@
+﻿@model Carrito
+
+@{
+    ViewData["Title"] = "Carrito";
+}
+
+<div id="carritoContainer" class="container mt-4">
+    <h1>🛒 Tu Carrito de Compras</h1>
+    <hr />
+
+    @if (Model != null)
+    {
+        <div class="card">
+            <div class="card-body">
+                @if (Model.ItemsCarrito != null && Model.ItemsCarrito.Any())
+                {
+                    <div class="table-responsive">
+                        <table class="table table-hover">
+                            <thead>
+                                <tr>
+                                    <th>Imagen</th>
+                                    <th>Producto</th>
+                                    <th>Cantidad</th>
+                                    <th>Precio Unitario</th>
+                                    <th>Subtotal</th>
+                                    <th>Acción</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                @foreach (ItemCarrito item in Model.ItemsCarrito)
+                                {
+                                    <tr>
+                                        <td>
+                                            <input class="idProducto" type="hidden" value="@item.IdProducto"/>
+                                            @if (!string.IsNullOrEmpty(item.MainImageUrl))
+                                            {
+                                                <img src="@item.MainImageUrl" class="img-thumbnail" style="width: 75px; height: 75px; object-fit: cover;" alt="Imagen de @item.Producto.Nombre" />
+                                            }
+                                        </td>
+                                        <td>
+                                            @item.Producto.Nombre
+                                        </td>
+                                        <td>
+                                            <button type="button" class="btn border" onclick="AddQuantity(this)">
+                                                <span class="material-symbols-outlined">
+                                                    add
+                                                </span>
+                                            </button>
+                                            <input class="text-center cantidad-input" type="number" name="cantidad" min="1" placeholder="@item.Cantidad" onchange="UpdateQuantity(this)" style="width: 75px;" />
+                                            <button type="button" class="btn border" onclick="ReduceQuantity(this)">
+                                                <span class="material-symbols-outlined">
+                                                    remove
+                                                </span>
+                                            </button>
+                                        </td>
+                                        <td>
+                                            <span class="badge bg-warning text-dark">@item.PrecioUnitario €</span>
+                                        </td>
+                                        <td>
+                                            <span class="badge bg-warning text-dark">@item.Subtotal €</span>
+                                        </td>
+                                        <td>
+                                            <form asp-action="RemoveCarritoItem" method="post">
+                                                <input type="hidden" class="idItemCarrito" name="idItemCarrito" value="@item.IdItemCarrito" />
+                                                <button type="submit" class="btn btn-danger btn-sm">Quitar</button>
+                                            </form>
+                                        </td>
+                                    </tr>
+                                }
+                            </tbody>
+                        </table>
+                    </div>
+                }
+                else
+                {
+                    <div class="alert alert-info" role="alert">
+                        <p>Tu carrito está vacío. ¡Añade algunos productos!</p>
+                    </div>
+                }
+
+                <hr />
+
+                <div class="row mt-3">
+                    <div class="col text-end">
+                        <h3>Total del Carrito: <span id="total" class="badge bg-primary">@Model.Total €</span></h3>
+                    </div>
+                </div>
+            </div>
+
+            <div class="card-footer d-flex justify-content-between">
+                <form asp-action="ClearCarritoItems" method="post">
+                    <button type="submit" class="btn btn-outline-danger">Vaciar Carrito</button>
+                </form>
+                <form asp-action="Checkout" method="get">
+                    <button type="submit" class="btn btn-success">Confirmar Pedido y Pagar</button>
+                </form>
+            </div>
+        </div>
+    }
+    else
+    {
+        <div class="alert alert-danger" role="alert">
+            <p>No se ha podido cargar el carrito de compras. Por favor, inténtalo de nuevo.</p>
+        </div>
+    }
+</div>
+<script>
+    function AddQuantity(element){
+        let $row = $(element).closest('tr');
+        let idProducto = $row.find(".idProducto").val();
+        $.ajax({
+            url: '@Url.Action("AddOrRemoveItemCarrito", "Carrito")',
+            type: 'PATCH',
+            data: { idProducto: idProducto, add: true,  },
+            success: function (data) {
+                console.log(data)
+                getCarrito();
+            },
+            error: function (xhr, status, error) {
+                console.error("Error loading cart:", status, error);
+            }
+        });
+    }
+
+    function ReduceQuantity(element){
+        let $row = $(element).closest('tr');
+        let idProducto = $row.find(".idProducto").val();
+        $.ajax({
+            url: '@Url.Action("AddOrRemoveItemCarrito", "Carrito")',
+            type: 'PATCH',
+            data: { idProducto: idProducto, add: false },
+            success: function (data) {
+                console.log(data)
+                getCarrito();
+            },
+            error: function (xhr, status, error) {
+                console.error("Error loading cart:", status, error);
+            }
+        });
+
+    }
+    function UpdateQuantity(element){
+        let $row = $(element).closest('tr');
+        let idProducto = $row.find(".idProducto").val();
+        let cantidad = $(element).val();
+        $.ajax({
+            url: '@Url.Action("UpdateCarrito", "Carrito")',
+            type: 'POST',
+            data: { idProducto: idProducto, cantidad: cantidad },
+            success: function (data) {
+                console.log(data)
+                getCarrito();
+            },
+            error: function (xhr, status, error) {
+                console.error("Error loading cart:", status, error);
+            }
+        });
+    }
+
+    function RemoveItemCarrito(element)
+    {
+        let $row = $(element).closest('tr');
+        let idItemCarrito = $row.find(".idItemCarrito").val();
+        $.ajax({
+            url: '@Url.Action("RemoveCarritoItemAjax", "Carrito")',
+            type: 'PUT',
+            data: { idItemCarrito: idItemCarrito },
+            success: function (data) {
+                console.log(data)
+                getCarrito();
+            },
+            error: function (xhr, status, error) {
+                console.error("Error loading cart:", status, error);
+            }
+        });
+    }
+
+    function EmptyCarrito(){
+        $.ajax({
+            url: '@Url.Action("ClearCarritoItemsAjax", "Carrito")',
+            type: 'DELETE',
+            success: function (data) {
+                console.log(data)
+                getCarrito();
+            },
+            error: function (xhr, status, error) {
+                console.error("Error loading cart:", status, error);
+            }
+        });
+    }
+
+    function getCarrito(){
+        $.ajax({
+            url: '@Url.Action("GetCarrito", "Carrito")',
+            type: 'GET',
+            success: function (data) {
+                $("#carritoContainer").empty();
+                $("#carritoContainer").append(`
+                    <h1>🛒 Tu Carrito de Compras</h1>
+                    <hr />
+                `);
+                if(data != null){
+                    $("#carritoContainer").append(`
+                        <div class="card">
+                            <div class="card-body">
+                            </div>
+                        </div>
+                    `);
+                    if(data.itemsCarrito.length > 0){
+                        $("#carritoContainer .card-body").append(`
+                            <div class="table-responsive">
+                                <table class="table table-hover">
+                                    <thead>
+                                        <tr>
+                                            <th>Imagen</th>
+                                            <th>Producto</th>
+                                            <th>Cantidad</th>
+                                            <th>Precio Unitario</th>
+                                            <th>Subtotal</th>
+                                            <th>Acción</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                    </tbody>
+                                </table>
+                            </div>
+                        `);
+                        for(const item of data.itemsCarrito){
+                            $("#carritoContainer tbody").append(`
+                                    <tr>
+                                        <input class="idProducto" type="hidden" value="${item.idProducto}"/>
+                                        <td>
+                                            ${ item.mainImageUrl ?
+                                                `<img src="${item.mainImageUrl}" class="img-thumbnail" style="width: 75px; height: 75px; object-fit: cover;" alt="Imagen de ${item.producto.nombre}"/>`
+                                                : ``
+                                                }
+                                        </td>
+                                        <td>
+                                            ${item.producto.nombre}
+                                        </td>
+                                        <td>
+                                            <button type="button" class="btn border" onclick="AddQuantity(this)">
+                                                <span class="material-symbols-outlined">
+                                                    add
+                                                </span>
+                                            </button>
+                                            <input class="text-center cantidad-input" type="number" name="cantidad" min="1" placeholder="${item.cantidad}" onchange="UpdateQuantity(this)" style="width: 75px;" />
+                                            <button type="button" class="btn border" onclick="ReduceQuantity(this)">
+                                                <span class="material-symbols-outlined">
+                                                    remove
+                                                </span>
+                                            </button>
+                                        </td>
+                                        <td>
+                                            <span class="badge bg-warning text-dark">${item.precioUnitario}€</span>
+                                        </td>
+                                        <td>
+                                            <span class="badge bg-warning text-dark">${item.subtotal} €</span>
+                                        </td>
+                                        <td>                                
+                                            <input type="hidden" class="idItemCarrito" name="idItemCarrito" value="${item.idItemCarrito}" />
+                                            <button type="submit" class="btn btn-danger btn-sm" onClick="RemoveItemCarrito(this)">Quitar</button>
+                                        </td>
+                                    </tr>
+                                `
+                            );
+                        }
+                    }else{
+                        $("#carritoContainer .card-body").append(`
+                            <div class="alert alert-info" role="alert">
+                                <p>Tu carrito está vacío. ¡Añade algunos productos!</p>
+                            </div>
+                        `);
+                    }
+
+                    $("#carritoContainer .card-body").append(`
+                        <hr />
+                        <div class="row mt-3">
+                            <div class="col text-end">
+                                <h3>Total del Carrito: <span id="total" class="badge bg-primary">${data.total} €</span></h3>
+                            </div>
+                        </div>
+                    `)
+                    $("#carritoContainer .card").append(`
+                        <div class="card-footer d-flex justify-content-between">
+                            <button type="button" class="btn btn-outline-danger" onClick="EmptyCarrito()" >Vaciar Carrito</button>
+                            <form asp-action="Checkout" method="get">
+                                <button type="submit" class="btn btn-success">Confirmar Pedido y Pagar</button>
+                            </form>
+                        </div>
+                    `);
+                }else{
+                    $("#carritoContainer ").append(`
+                        <div class="alert alert-danger" role="alert">
+                            <p>No se ha podido cargar el carrito de compras. Por favor, inténtalo de nuevo.</p>
+                        </div>
+                    `);
+                }
+                getCarritoItemsCount()
+            },
+            error: function (xhr, status, error) {
+
+                console.error("Error loading cart:", status, error);
+            }
+        });
+    }
+
+    function getCarritoItemsCount() {
+        $.ajax({
+            url: '@Url.Action("GetCarritoItemsCount", "Carrito")',
+            type: 'GET',
+            success: function (data) {
+                if (data > 0) {
+                    $("#carritoLink").empty();
+                    $("#carritoLink").append(`Carrito <span class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger">${data}</span>`);
+                } else {
+                    $("#carritoLink").empty();
+                    $("#carritoLink").append(`Carrito`);
+                }
+            },
+            error: function (xhr, status, error) {
+                console.log('Error ', status, error);
+            }
+        });
+    }
+
+</script>

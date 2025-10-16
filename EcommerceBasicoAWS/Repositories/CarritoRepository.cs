@@ -15,16 +15,43 @@ namespace EcommerceBasicoAWS.Repositories
            _context = context;
         }
 
-        public async Task<bool> AddItemCarrito(Carrito carrito, ItemCarrito itemCarrito)
+        public async Task<bool> AddOrUpdateItemCarrito(ItemCarrito itemCarrito)
         {
             try
             {
-                if (carrito.ItemsCarrito == null) { 
-                    carrito.ItemsCarrito = new List<ItemCarrito>();
+                Carrito? carrito = await _context.Carritos.SingleOrDefaultAsync(c => c.IdCarrito == itemCarrito.IdCarrito);
+
+                if (carrito == null) {
+                    new Exception("No dispone de un carrito");
                 }
-                carrito.ItemsCarrito.Add(itemCarrito);
-                carrito.Total += itemCarrito.Subtotal;
-                _context.SaveChanges();
+                else
+                {                    
+                    ItemCarrito? itemCarritoExists = carrito.ItemsCarrito != null ? 
+                        carrito.ItemsCarrito.SingleOrDefault(item => item.IdProducto == itemCarrito.IdProducto) : null;
+
+                    if (itemCarritoExists != null)
+                    {
+                        itemCarritoExists.Cantidad = itemCarrito.Cantidad;
+                        itemCarritoExists.Subtotal = itemCarrito.Subtotal;
+                        _context.ItemsCarrito.Update(itemCarritoExists);
+                        decimal subtotal = 0;
+                        foreach (ItemCarrito item in carrito.ItemsCarrito)
+                        {
+                            subtotal += item.Subtotal;
+                        }
+                        carrito.Total = subtotal;
+                    }
+                    else
+                    {
+                        _context.ItemsCarrito.Add(itemCarrito);
+                        carrito.Total += itemCarrito.Subtotal;
+                        _context.Carritos.Update(carrito);
+                    }
+
+
+                    _context.SaveChanges();
+                }
+
                 return true;
             }
             catch (Exception ex) {
@@ -81,7 +108,7 @@ namespace EcommerceBasicoAWS.Repositories
 
         public async Task<Carrito?> GetUserCarrito(string userId)
         {
-            Carrito? carrito = await _context.Carritos.FirstOrDefaultAsync(c => c.IdUsuario == userId);
+            Carrito? carrito = await _context.Carritos.Include(c => c.ItemsCarrito).ThenInclude(item => item.Producto).FirstOrDefaultAsync(c => c.IdUsuario == userId);
 
             return carrito;
         }
@@ -91,18 +118,44 @@ namespace EcommerceBasicoAWS.Repositories
             Carrito? carrito = await GetUserCarrito(userId);
             bool response = false;
             if(carrito != null)
-            {
+            {                
                 ItemCarrito? itemCarrito = carrito.ItemsCarrito.SingleOrDefault(i => i.IdItemCarrito == idItemCarrito);
 
                 if (itemCarrito != null) {
-                    carrito.ItemsCarrito.Remove(itemCarrito);
                     carrito.Total -= itemCarrito.Subtotal;
+                    _context.ItemsCarrito.Remove(itemCarrito);
                     _context.SaveChanges();
                     response = true;
                 }
             }
 
             return response;
+        }
+
+        public async Task<bool> UpdateCarritoItem(ItemCarrito itemCarrito)
+        {
+            _context.ItemsCarrito.Update(itemCarrito);
+            Carrito? carrito = _context.Carritos.SingleOrDefault(c => c.IdCarrito == itemCarrito.IdCarrito);
+            if(carrito != null)
+            {
+                decimal subtotal = 0;
+                foreach(ItemCarrito item in carrito.ItemsCarrito)
+                {
+                    if(item.IdProducto == itemCarrito.IdProducto)
+                    {
+                        subtotal += itemCarrito.Subtotal;
+                    }
+                    else
+                    {
+                        subtotal += item.Subtotal;
+                    }
+                }
+
+                carrito.Total = subtotal;
+            }
+            _context.SaveChanges();
+
+            return true;
         }
     }
 }
